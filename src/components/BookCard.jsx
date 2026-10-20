@@ -1,4 +1,5 @@
 import { STATUSES } from '../constants.js'
+import Cover from './Cover.jsx'
 
 const STATUS_CLASS = {
   [STATUSES[0]]: 'status-todo',
@@ -9,21 +10,24 @@ const STATUS_CLASS = {
 export default function BookCard({ book, isEditing, onEdit, onDelete }) {
   return (
     <article className={`book ${isEditing ? 'editing' : ''}`}>
-      <div className="book-info">
-        <div className="book-title">{book.title}</div>
-        <div className="book-author">{book.author}</div>
-        <div className="tags">
-          <span className="tag">{book.genre}</span>
-          <span className={`tag ${STATUS_CLASS[book.status] || ''}`}>{book.status}</span>
+      <Cover url={book.coverUrl} title={book.title} author={book.author} size="sm" />
+      <div className="book-body">
+        <div className="book-info">
+          <div className="book-title">{book.title}</div>
+          <div className="book-author">{book.author}</div>
+          <div className="tags">
+            <span className="tag">{book.genre}</span>
+            <span className={`tag ${STATUS_CLASS[book.status] || ''}`}>{book.status}</span>
+          </div>
         </div>
-      </div>
-      <div className="book-actions">
-        <button className="btn btn-secondary btn-sm" onClick={onEdit}>
-          Tahrirlash
-        </button>
-        <button className="btn btn-danger btn-sm" onClick={onDelete}>
-          O‘chirish
-        </button>
+        <div className="book-actions">
+          <button className="btn btn-secondary btn-sm" onClick={onEdit}>
+            Tahrirlash
+          </button>
+          <button className="btn btn-danger btn-sm" onClick={onDelete}>
+            O‘chirish
+          </button>
+        </div>
       </div>
     </article>
   )

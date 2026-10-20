@@ -18,3 +18,9 @@ Brauzerda terminal ko‘rsatgan manzilni oching (odatda http://localhost:5173).
 - `src/components/BookList.jsx`, `BookCard.jsx` — ro‘yxat
 - `src/components/ConfirmModal.jsx` — o‘chirishni tasdiqlash
 - `src/storage.js` — localStorage bilan ishlash
+
+## Muqovalar
+
+Kitob nomi yozilganda ilova [Open Library](https://openlibrary.org) orqali haqiqiy muqovani qidiradi
+(`src/covers.js`). Topilmasa yoki internet bo‘lmasa, nom va muallifdan rangli muqova yaratiladi
+(`src/components/Cover.jsx`).

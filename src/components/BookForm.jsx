@@ -1,5 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { GENRES, STATUSES, EMPTY_FORM } from '../constants.js'
+import { findCoverUrl } from '../covers.js'
+import Cover from './Cover.jsx'
 
 export default function BookForm({ initial, onSubmit, onCancel, onInvalid }) {
   const isEditing = Boolean(initial)
@@ -9,6 +11,34 @@ export default function BookForm({ initial, onSubmit, onCancel, onInvalid }) {
       : EMPTY_FORM
   )
   const [errors, setErrors] = useState({})
+  const [coverUrl, setCoverUrl] = useState(initial?.coverUrl || null)
+  const [searching, setSearching] = useState(false)
+
+  // Foydalanuvchi yozishni to'xtatgach (0.6s) muqovani qidirish
+  useEffect(() => {
+    const title = form.title.trim()
+    const author = form.author.trim()
+    if (title.length < 2) {
+      setCoverUrl(null)
+      setSearching(false)
+      return
+    }
+    const controller = new AbortController()
+    const t = setTimeout(async () => {
+      setSearching(true)
+      try {
+        setCoverUrl(await findCoverUrl(title, author, controller.signal))
+      } catch (err) {
+        if (err.name !== 'AbortError') setCoverUrl(null) // internet bo'lmasa — generatsiya qilingan muqova
+      } finally {
+        if (!controller.signal.aborted) setSearching(false)
+      }
+    }, 600)
+    return () => {
+      clearTimeout(t)
+      controller.abort()
+    }
+  }, [form.title, form.author])
   const titleRef = useRef(null)
   const authorRef = useRef(null)
 
@@ -36,12 +66,24 @@ export default function BookForm({ initial, onSubmit, onCancel, onInvalid }) {
       return
     }
 
-    onSubmit({ ...form, title, author })
-    setForm(EMPTY_FORM) // muvaffaqiyatli qo'shilgach forma tozalanadi
+    onSubmit({ ...form, title, author, coverUrl: searching ? null : coverUrl })
+    setForm(EMPTY_FORM)
+    setCoverUrl(null) // muvaffaqiyatli qo'shilgach forma tozalanadi
   }
 
   return (
     <form onSubmit={handleSubmit} noValidate>
+      <div className="cover-preview">
+        <Cover url={coverUrl} title={form.title.trim()} author={form.author.trim()} loading={searching} />
+        <p className="hint">
+          {searching
+            ? 'Muqova qidirilmoqda…'
+            : coverUrl
+              ? 'Haqiqiy muqova topildi'
+              : 'Muqova nom va muallifdan yaratiladi'}
+        </p>
+      </div>
+
       <div className="field">
         <label htmlFor="title">Kitob nomi *</label>
         <input
