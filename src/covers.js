@@ -32,3 +32,14 @@ export function paletteFor(text) {
   for (const ch of text) h = (h * 31 + ch.codePointAt(0)) >>> 0
   return PALETTES[h % PALETTES.length]
 }
+
+// Sun'iy intellekt yordamida nomdan rasm yaratish (Pollinations — bepul, kalit talab qilinmaydi)
+// Bir xil nom har doim bir xil rasm beradi (seed).
+export function aiCoverUrl(title) {
+  const text = (title || '').trim()
+  if (!text) return null
+  let seed = 0
+  for (const ch of text.toLowerCase()) seed = (seed * 31 + ch.codePointAt(0)) % 1000000
+  const prompt = `${text}, colorful book cover illustration, no text, no letters`
+  return `https://image.pollinations.ai/prompt/${encodeURIComponent(prompt)}?width=360&height=540&nologo=true&seed=${seed}`
+}

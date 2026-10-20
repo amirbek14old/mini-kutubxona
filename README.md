@@ -22,5 +22,5 @@ Brauzerda terminal ko‘rsatgan manzilni oching (odatda http://localhost:5173).
 ## Muqovalar
 
 Kitob nomi yozilganda ilova [Open Library](https://openlibrary.org) orqali haqiqiy muqovani qidiradi
-(`src/covers.js`). Topilmasa yoki internet bo‘lmasa, nom va muallifdan rangli muqova yaratiladi
-(`src/components/Cover.jsx`).
+(`src/covers.js`). Topilmasa, nomdan sun’iy intellekt rasm chizadi ([Pollinations](https://pollinations.ai), kalit kerak emas).
+Internet bo‘lmasa, nom va muallifdan rangli muqova ko‘rsatiladi (`src/components/Cover.jsx`).

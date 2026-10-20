@@ -1,5 +1,6 @@
 import { STATUSES } from '../constants.js'
 import Cover from './Cover.jsx'
+import { aiCoverUrl } from '../covers.js'
 
 const STATUS_CLASS = {
   [STATUSES[0]]: 'status-todo',
@@ -10,7 +11,13 @@ const STATUS_CLASS = {
 export default function BookCard({ book, isEditing, onEdit, onDelete }) {
   return (
     <article className={`book ${isEditing ? 'editing' : ''}`}>
-      <Cover url={book.coverUrl} title={book.title} author={book.author} size="sm" />
+      <Cover
+        url={book.coverUrl || aiCoverUrl(book.title)}
+        type={book.coverUrl ? book.coverType || 'real' : 'ai'}
+        title={book.title}
+        author={book.author}
+        size="sm"
+      />
       <div className="book-body">
         <div className="book-info">
           <div className="book-title">{book.title}</div>

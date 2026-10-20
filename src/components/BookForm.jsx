@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { GENRES, STATUSES, EMPTY_FORM } from '../constants.js'
-import { findCoverUrl } from '../covers.js'
+import { findCoverUrl, aiCoverUrl } from '../covers.js'
 import Cover from './Cover.jsx'
 
 export default function BookForm({ initial, onSubmit, onCancel, onInvalid }) {
@@ -11,7 +11,10 @@ export default function BookForm({ initial, onSubmit, onCancel, onInvalid }) {
       : EMPTY_FORM
   )
   const [errors, setErrors] = useState({})
-  const [coverUrl, setCoverUrl] = useState(initial?.coverUrl || null)
+  // cover = { url, type: 'real' | 'ai' }
+  const [cover, setCover] = useState(
+    initial ? { url: initial.coverUrl || aiCoverUrl(initial.title), type: initial.coverType || 'ai' } : null
+  )
   const [searching, setSearching] = useState(false)
 
   // Foydalanuvchi yozishni to'xtatgach (0.6s) muqovani qidirish
@@ -19,7 +22,7 @@ export default function BookForm({ initial, onSubmit, onCancel, onInvalid }) {
     const title = form.title.trim()
     const author = form.author.trim()
     if (title.length < 2) {
-      setCoverUrl(null)
+      setCover(null)
       setSearching(false)
       return
     }
@@ -27,9 +30,11 @@ export default function BookForm({ initial, onSubmit, onCancel, onInvalid }) {
     const t = setTimeout(async () => {
       setSearching(true)
       try {
-        setCoverUrl(await findCoverUrl(title, author, controller.signal))
+        // 1) haqiqiy muqova, topilmasa 2) AI rasm
+        const real = await findCoverUrl(title, author, controller.signal)
+        setCover(real ? { url: real, type: 'real' } : { url: aiCoverUrl(title), type: 'ai' })
       } catch (err) {
-        if (err.name !== 'AbortError') setCoverUrl(null) // internet bo'lmasa — generatsiya qilingan muqova
+        if (err.name !== 'AbortError') setCover({ url: aiCoverUrl(title), type: 'ai' })
       } finally {
         if (!controller.signal.aborted) setSearching(false)
       }
@@ -66,21 +71,31 @@ export default function BookForm({ initial, onSubmit, onCancel, onInvalid }) {
       return
     }
 
-    onSubmit({ ...form, title, author, coverUrl: searching ? null : coverUrl })
+    // qidiruv tugamagan bo'lsa ham AI rasm saqlanadi
+    const finalCover = !searching && cover ? cover : { url: aiCoverUrl(title), type: 'ai' }
+    onSubmit({ ...form, title, author, coverUrl: finalCover.url, coverType: finalCover.type })
     setForm(EMPTY_FORM)
-    setCoverUrl(null) // muvaffaqiyatli qo'shilgach forma tozalanadi
+    setCover(null) // muvaffaqiyatli qo'shilgach forma tozalanadi
   }
 
   return (
     <form onSubmit={handleSubmit} noValidate>
       <div className="cover-preview">
-        <Cover url={coverUrl} title={form.title.trim()} author={form.author.trim()} loading={searching} />
+        <Cover
+          url={cover?.url}
+          type={cover?.type}
+          title={form.title.trim()}
+          author={form.author.trim()}
+          searching={searching}
+        />
         <p className="hint">
           {searching
             ? 'Muqova qidirilmoqda…'
-            : coverUrl
+            : cover?.type === 'real'
               ? 'Haqiqiy muqova topildi'
-              : 'Muqova nom va muallifdan yaratiladi'}
+              : cover?.type === 'ai'
+                ? 'Rasm nomdan sun’iy intellekt yordamida yaratildi'
+                : 'Kitob nomini yozing — rasm avtomatik yaratiladi'}
         </p>
       </div>
 
